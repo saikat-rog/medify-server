@@ -1,6 +1,7 @@
 from app.config import db
 import uuid
 import datetime
+import json
 
 # Function to generate unique UUIDs
 def generate_uuid():
@@ -24,34 +25,47 @@ class Patient(db.Model):
     user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
     age = db.Column(db.Integer, nullable=False)
+    phone = db.Column(db.String(100), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.datetime.utcnow)
+
+    # Relationship: A patient has multiple courses
+    courses = db.relationship("Course", backref="patient", cascade="all, delete-orphan")
+
+# Course model
+class Course(db.Model):
+    id = db.Column(db.String(36), primary_key=True, default=generate_uuid)
+    name = db.Column(db.String(100), nullable=False)
+    patient_id = db.Column(db.String(36), db.ForeignKey('patient.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.datetime.utcnow)
+
+    # Relationship with medicines
+    medicines = db.relationship("Medicine", backref="course", cascade="all, delete-orphan")
 
 # Medicine model
 class Medicine(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=generate_uuid)
+    course_id = db.Column(db.String(36), db.ForeignKey('course.id'), nullable=False)  # Fixed FK
     name = db.Column(db.String(100), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-
-# Medicine schedule (Time + Duration)
-class Schedule(db.Model):
-    id = db.Column(db.String(36), primary_key=True, default=generate_uuid)
-    patient_id = db.Column(db.String(36), db.ForeignKey('patient.id'), nullable=False)
-    medicine_id = db.Column(db.String(36), db.ForeignKey('medicine.id'), nullable=False)
-    time = db.Column(db.Time, nullable=False)
-    days_remaining = db.Column(db.Integer, nullable=False)
+    times = db.Column(db.String(500), nullable=False)  # Store multiple times as JSON string
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.datetime.utcnow)
 
-    # Relationship (Optional, only needed if frequently accessing patients/medicines)
-    patient = db.relationship("Patient", backref="schedules", lazy=True)
-    medicine = db.relationship("Medicine", backref="schedules", lazy=True)
+    logs = db.relationship("MedicineLog", backref="medicine", cascade="all, delete-orphan")
 
-# Medicine Consumption Log
-class ConsumptionLog(db.Model):
+    def set_times(self, times_list):
+        """Store list of times as a JSON string"""
+        self.times = json.dumps(times_list)
+
+    def get_times(self):
+        """Retrieve list of times as a Python list"""
+        return json.loads(self.times) if self.times else []
+    
+# Medicine log model
+class MedicineLog(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=generate_uuid)
-    schedule_id = db.Column(db.String(36), db.ForeignKey('schedule.id'), nullable=False)
-    confirmed = db.Column(db.Boolean, default=False)  # Whether the patient confirmed intake
-    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-
-    schedule = db.relationship("Schedule", backref="logs", lazy=True)
+    medicine_id = db.Column(db.String(36), db.ForeignKey('medicine.id'), nullable=False)
+    date = db.Column(db.Date, default=datetime.date.today, nullable=False)
+    time_taken = db.Column(db.Time, nullable=False)  # Actual time of intake
+    is_taken = db.Column(db.Boolean, default=False)  # True if medicine was taken

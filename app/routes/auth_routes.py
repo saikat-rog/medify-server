@@ -83,7 +83,7 @@ def login():
         # Generate JWT Token
         token = jwt.encode({
             'user_id': user.id,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=2)  # Token expires in 2 hours
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=50)  # Token expires in 2 hours
         }, SECRET_KEY, algorithm="HS256")
 
         return jsonify({'message': 'Logged in successfully', 'token': token, 'user_id': user.id}), 200
