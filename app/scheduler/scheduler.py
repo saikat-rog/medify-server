@@ -8,7 +8,7 @@ from twilio.twiml.voice_response import VoiceResponse
 from twilio.rest import Client
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 app = Flask(__name__)
 
@@ -38,8 +38,10 @@ def check_medicine_times():
 
                 call = client.calls.create(
                     url=f"{os.getenv('SERVER_URI')}/twilio/twiml?patient_id={patient.id}&medicine_id={medicine.id}",
+                    # to="+917586914646",
                     to="+918334066167",
                     from_="+12765799954"
+                    # from_="+15396664952"
                 )
                 print(f"Call initiated: {call.sid}")
 
