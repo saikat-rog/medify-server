@@ -12,6 +12,7 @@ SECRET_KEY = "your_secret_key"
 
 auth_bp = Blueprint('auth', __name__)
 
+# Verify auth by token 
 def token_required(f):
     """Decorator to protect routes with JWT"""
     @wraps(f)
@@ -34,6 +35,7 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
     return decorated
 
+# User Registration
 @auth_bp.route('/register', methods=['POST'])
 def register():
     try:
@@ -67,7 +69,7 @@ def register():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
+# USer Login
 @auth_bp.route('/login', methods=['POST'])
 def login():
     try:

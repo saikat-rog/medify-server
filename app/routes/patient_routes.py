@@ -6,6 +6,8 @@ from app.routes.auth_routes import token_required
 
 patient_bp = Blueprint('patient', __name__)
 
+
+# PATIENT
 # Create a new patient for a user
 @patient_bp.route('/add-patient', methods=['POST'])
 @token_required
@@ -63,7 +65,9 @@ def remove_patient(current_user, patient_id):
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-# Add a course to a patient [Course name, Medicine names, Times are required fields]
+
+# COURSE
+# Add a course to a patient [Course name, Medicine names, Duration, Times are required fields]
 @patient_bp.route("/add-course/<string:patient_id>", methods=["POST"])
 @token_required
 def add_course(current_user, patient_id):
@@ -72,6 +76,7 @@ def add_course(current_user, patient_id):
 
         course_name = data.get("course_name")
         medicine_name = data.get("medicine_name")
+        medicine_duration = data.get("medicine_duration")
         medicine_times = data.get("medicine_times")
 
         if not medicine_name or not medicine_times:
@@ -93,6 +98,7 @@ def add_course(current_user, patient_id):
         new_medicine = Medicine(
             course_id=new_course.id,
             name=medicine_name,
+            duration=medicine_duration,
             times=json.dumps(medicine_times)
         )
 
@@ -126,8 +132,38 @@ def delete_course(current_user, course_id):
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
+# Get all the courses for a patient
+@patient_bp.route("/get-all-courses/<string:patient_id>", methods=["GET"])
+@token_required
+def get_courses(current_user, patient_id):
+    try:
+        patient = Patient.query.get(patient_id)
+
+        if not patient or patient.user_id != current_user.id:
+            return jsonify({"error": "Patient not found or unauthorized"}), 404
+
+        courses = Course.query.filter_by(patient_id=patient_id).all()
+
+        if not courses:
+            return jsonify({"message": "No courses found"}), 200
+
+        response = []
+        for course in courses:
+            response.append({
+                "id": course.id,
+                "name": course.name
+            })
+
+        return jsonify(response), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+    
+    
+# MEDICINE
 # Add medicine and times to a an existing course
-@patient_bp.route("/add-medicine-to-the-course/<string:course_id>", methods=["POST"])
+@patient_bp.route("/add-medicine/<string:course_id>", methods=["POST"])
 @token_required
 def add_medicine(current_user, course_id):
     try:
@@ -135,6 +171,7 @@ def add_medicine(current_user, course_id):
 
         medicine_name = data.get("medicine_name")
         medicine_times = data.get("medicine_times")
+        medicine_duration = data.get("medicine_duration")
 
         if not medicine_name or not medicine_times:
             return jsonify({"error": "Missing required fields"}), 400
@@ -147,6 +184,7 @@ def add_medicine(current_user, course_id):
         new_medicine = Medicine(
             course_id=course_id,
             name=medicine_name,
+            duration=medicine_duration,
             times=json.dumps(medicine_times)
         )
 
@@ -207,31 +245,4 @@ def delete_medicine(current_user, medicine_id):
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500
-
-# Get all the courses for a patient
-@patient_bp.route("/get-all-courses/<string:patient_id>", methods=["GET"])
-@token_required
-def get_courses(current_user, patient_id):
-    try:
-        patient = Patient.query.get(patient_id)
-
-        if not patient or patient.user_id != current_user.id:
-            return jsonify({"error": "Patient not found or unauthorized"}), 404
-
-        courses = Course.query.filter_by(patient_id=patient_id).all()
-
-        if not courses:
-            return jsonify({"message": "No courses found"}), 200
-
-        response = []
-        for course in courses:
-            response.append({
-                "id": course.id,
-                "name": course.name
-            })
-
-        return jsonify(response), 200
-
-    except Exception as e:
         return jsonify({"error": str(e)}), 500

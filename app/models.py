@@ -48,6 +48,7 @@ class Medicine(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=generate_uuid)
     course_id = db.Column(db.String(36), db.ForeignKey('course.id'), nullable=False)  # Fixed FK
     name = db.Column(db.String(100), nullable=False)
+    duration = db.Column(db.Integer, nullable=False)  # Duration in days
     times = db.Column(db.String(500), nullable=False)  # Store multiple times as JSON string
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.datetime.utcnow)
