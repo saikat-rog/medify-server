@@ -35,7 +35,7 @@ def check_medicine_times():
                     continue
 
                 call = client.calls.create(
-                    url=f"{os.getenv("SERVER_URI")}/twiml?patient_id={patient.id}&medicine_id={medicine.id}",
+                    url=f"{os.getenv('SERVER_URI')}/twiml?patient_id={patient.id}&medicine_id={medicine.id}",
                     to="+918334066167",
                     from_="+12765799954"
                 )
