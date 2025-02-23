@@ -23,10 +23,12 @@ def check_medicine_times():
     """Check if any medicine time matches the current time and initiate a call."""
     now = datetime.now()
     current_time = now.strftime("%H:%M")
+    print(f"{current_time}")
 
     with scheduler.app.app_context():
         medicines = Medicine.query.all()
         for medicine in medicines:
+            print(f"Checking medicine: {medicine.name}")
             times_list = json.loads(medicine.times) if medicine.times else []
             if current_time in times_list:
                 print(f"Calling patient for medicine reminder at {now.date()} {current_time}")
