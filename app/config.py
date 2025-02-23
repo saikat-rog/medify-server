@@ -18,12 +18,10 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # Create tables if they don't exist
-    with app.app_context():
-        db.create_all()
-
-    # Import and register blueprints
     from app.routes import register_blueprints
     register_blueprints(app)
+
+    from app.scheduler.scheduler import start_scheduler
+    start_scheduler(app)  # Pass the app instance
 
     return app
