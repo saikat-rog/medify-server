@@ -83,6 +83,6 @@ scheduler = BackgroundScheduler()
 def start_scheduler(app: Flask):
     """Start the background scheduler with the Flask app context."""
     scheduler.app = app
-    scheduler.add_job(check_medicine_times, 'interval', seconds=5)
+    scheduler.add_job(check_medicine_times, 'cron', second=0)
     scheduler.start()
     print("[DEBUG] Scheduler started successfully.")
