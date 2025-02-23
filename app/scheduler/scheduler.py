@@ -23,12 +23,10 @@ def check_medicine_times():
     """Check if any medicine time matches the current time and initiate a call."""
     now = datetime.now()
     current_time = now.strftime("%H:%M")
-    print(f"{current_time}")
 
     with scheduler.app.app_context():
         medicines = Medicine.query.all()
         for medicine in medicines:
-            print(f"Checking medicine: {medicine.name}")
             times_list = json.loads(medicine.times) if medicine.times else []
             if current_time in times_list:
                 print(f"Calling patient for medicine reminder at {now.date()} {current_time}")
@@ -40,10 +38,10 @@ def check_medicine_times():
 
                 call = client.calls.create(
                     url=f"{os.getenv('SERVER_URI')}/twilio/twiml?patient_id={patient.id}&medicine_id={medicine.id}",
-                    # to="+917586914646",
                     to="+918334066167",
                     from_="+12765799954"
-                    # from_="+15396664952"
+                    # to="+917586914646", //soumik
+                    # from_="+15396664952" //soumik
                 )
                 print(f"Call initiated: {call.sid}")
 
