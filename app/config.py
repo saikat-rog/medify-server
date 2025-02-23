@@ -1,9 +1,13 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 class Config:
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://u447378002_medifyteam:MedifyTeam2024@srv1554.hstgr.io/u447378002_medifydb'
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URI")
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_size": 10,         # Number of connections to keep open
         "max_overflow": 5,       # Extra connections if pool is full
