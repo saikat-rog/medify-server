@@ -8,7 +8,7 @@ from twilio.twiml.voice_response import VoiceResponse
 from twilio.rest import Client
 from dotenv import load_dotenv
 
-load_dotenv(override=True)
+load_dotenv()
 
 app = Flask(__name__)
 
