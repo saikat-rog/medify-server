@@ -29,7 +29,7 @@ def check_medicine_times():
             if current_time in times_list:
                 print(f"Calling patient for medicine reminder at {now.date()} {current_time}")
                 
-                patient = Patient.query.get(medicine.patient_id)
+                patient = Patient.query.get(medicine.course.patient_id)
                 if not patient:
                     print("Patient not found")
                     continue
@@ -83,6 +83,6 @@ scheduler = BackgroundScheduler()
 def start_scheduler(app: Flask):
     """Start the background scheduler with the Flask app context."""
     scheduler.app = app
-    scheduler.add_job(check_medicine_times, 'cron', second=0)
+    scheduler.add_job(check_medicine_times, 'interval', seconds=5)
     scheduler.start()
     print("[DEBUG] Scheduler started successfully.")
