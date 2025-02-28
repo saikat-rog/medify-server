@@ -1,7 +1,8 @@
 from app.config import db
 import uuid
-import datetime
+from datetime import datetime, timezone, timedelta
 import json
+from sqlalchemy.sql import func
 
 # Function to generate unique UUIDs
 def generate_uuid():
@@ -42,6 +43,17 @@ class Course(db.Model):
 
     # Relationship with medicines
     medicines = db.relationship("Medicine", backref="course", cascade="all, delete-orphan")
+    
+    @property
+    def course_expiry(self):
+        """Returns the latest expiry date among all medicines in the course."""
+        latest_medicine = max(self.medicines, key=lambda med: med.expiry_at, default=None)
+        return latest_medicine.expiry_at if latest_medicine else None
+    
+    @property
+    def isExpired(self):
+        """Check if the course has expired based on the latest medicine expiry date."""
+        return self.course_expiry and self.course_expiry < datetime.now(timezone.utc)
 
 # Medicine model
 class Medicine(db.Model):
@@ -52,9 +64,11 @@ class Medicine(db.Model):
     times = db.Column(db.String(500), nullable=False)  # Store multiple times as JSON string
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.datetime.utcnow)
+    expiry_at = db.Column(db.DateTime)  # Calculated based on duration
 
     logs = db.relationship("MedicineLog", backref="medicine", cascade="all, delete-orphan")
 
+        
     def set_times(self, times_list):
         """Store list of times as a JSON string"""
         self.times = json.dumps(times_list)
@@ -63,10 +77,18 @@ class Medicine(db.Model):
         """Retrieve list of times as a Python list"""
         return json.loads(self.times) if self.times else []
     
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.expiry_at = self.created_at + timedelta(days=self.duration)
+        
+    def is_expired(self):
+        """Check if the medicine has expired"""
+        return datetime.datetime.utcnow() > self.expiry_at if self.expiry_at else False
+    
 # Medicine log model
 class MedicineLog(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=generate_uuid)
     medicine_id = db.Column(db.String(36), db.ForeignKey('medicine.id'), nullable=False)
-    date = db.Column(db.Date, default=datetime.date.today, nullable=False)
-    time_taken = db.Column(db.Time, nullable=False)  # Actual time of intake
     is_taken = db.Column(db.Boolean, default=False)  # True if medicine was taken
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.datetime.utcnow)
