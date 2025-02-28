@@ -14,8 +14,8 @@ class User(db.Model):
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    updated_at = db.Column(db.DateTime, onupdate=datetime.datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
     # Relationship: One user has multiple patients
     patients = db.relationship("Patient", backref="user", cascade="all, delete-orphan")
@@ -27,8 +27,8 @@ class Patient(db.Model):
     name = db.Column(db.String(100), nullable=False)
     age = db.Column(db.Integer, nullable=False)
     phone = db.Column(db.String(100), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    updated_at = db.Column(db.DateTime, onupdate=datetime.datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
     # Relationship: A patient has multiple courses
     courses = db.relationship("Course", backref="patient", cascade="all, delete-orphan")
@@ -38,8 +38,8 @@ class Course(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=generate_uuid)
     name = db.Column(db.String(100), nullable=False)
     patient_id = db.Column(db.String(36), db.ForeignKey('patient.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    updated_at = db.Column(db.DateTime, onupdate=datetime.datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
     # Relationship with medicines
     medicines = db.relationship("Medicine", backref="course", cascade="all, delete-orphan")
@@ -62,8 +62,8 @@ class Medicine(db.Model):
     name = db.Column(db.String(100), nullable=False)
     duration = db.Column(db.Integer, nullable=False)  # Duration in days
     times = db.Column(db.String(500), nullable=False)  # Store multiple times as JSON string
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    updated_at = db.Column(db.DateTime, onupdate=datetime.datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
     expiry_at = db.Column(db.DateTime)  # Calculated based on duration
 
     logs = db.relationship("MedicineLog", backref="medicine", cascade="all, delete-orphan")
@@ -90,5 +90,5 @@ class MedicineLog(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=generate_uuid)
     medicine_id = db.Column(db.String(36), db.ForeignKey('medicine.id'), nullable=False)
     is_taken = db.Column(db.Boolean, default=False)  # True if medicine was taken
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    updated_at = db.Column(db.DateTime, onupdate=datetime.datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
