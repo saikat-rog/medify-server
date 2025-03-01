@@ -6,6 +6,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import datetime
 from functools import wraps
+import pytz
+
+IST = pytz.timezone("Asia/Kolkata")
 
 # Secret Key for JWT
 SECRET_KEY = "your_secret_key"
@@ -84,7 +87,7 @@ def login():
         # Generate JWT Token
         token = jwt.encode({
             'user_id': user.id,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=50)  # Token expires in 2 hours
+            'exp': datetime.datetime.now(IST) + datetime.timedelta(hours=50)  # Token expires in 2 hours
         }, SECRET_KEY, algorithm="HS256")
 
         return jsonify({'message': 'Logged in successfully', 'token': token, 'user_id': user.id}), 200

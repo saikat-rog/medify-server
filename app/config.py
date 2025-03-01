@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 import os
+import sys
 
 load_dotenv()
 
@@ -31,7 +32,11 @@ def create_app():
     from app.routes import register_blueprints
     register_blueprints(app)
 
-    from app.scheduler.scheduler import start_scheduler
-    start_scheduler(app)  # Pass the app instance
+    if not os.environ.get("FLASK_CLI"):
+        from app.scheduler.scheduler import start_scheduler
+        from app.scheduler.scheduler import scheduler
+
+        if not scheduler.running:
+            start_scheduler(app)
 
     return app
