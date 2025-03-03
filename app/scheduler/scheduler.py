@@ -28,12 +28,13 @@ def check_medicine_times():
     with scheduler.app.app_context():
         medicines = Medicine.query.all()
         for medicine in medicines:
-            
+            print(f"eXP: {medicine.is_expired()}")
             if medicine.is_expired():  # Skip expired medicines
                 continue
             
             # Get times for mediines not expired
             times_list = json.loads(medicine.times) if medicine.times else []
+            
             if current_time in times_list:
                 
                 print(f"Calling patient for medicine reminder at {now.date()} {current_time}")
@@ -109,6 +110,6 @@ scheduler = BackgroundScheduler()
 def start_scheduler(app: Flask):
     """Start the background scheduler with the Flask app context."""
     scheduler.app = app
-    scheduler.add_job(check_medicine_times, 'cron', second=0)
+    scheduler.add_job(check_medicine_times, 'cron', second=0, id='medicine_checker', replace_existing=True)
     scheduler.start()
     print("[DEBUG] Scheduler started successfully.")
