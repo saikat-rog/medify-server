@@ -90,7 +90,8 @@ def handle_response():
     if digit_pressed == "1":
         new_medicine_log = MedicineLog(
             medicine_id=medicine_id,
-            is_taken=True
+            is_taken=True,
+            created_at=datetime.utcnow()
         )
         
         db.session.add(new_medicine_log)
@@ -100,7 +101,8 @@ def handle_response():
     else:
         new_medicine_log = MedicineLog(
             medicine_id=medicine_id,
-            is_taken=False
+            is_taken=False,
+            created_at=datetime.utcnow()
         )
         
         db.session.add(new_medicine_log)
