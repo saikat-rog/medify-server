@@ -1,12 +1,9 @@
 from app.config import db
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 import json
 from sqlalchemy.sql import func
-import pytz
 from sqlalchemy import DateTime
-
-IST = pytz.timezone("Asia/Kolkata")
 
 
 # Function to generate unique UUIDs
@@ -19,8 +16,8 @@ class User(db.Model):
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
-    created_at = db.Column(DateTime(timezone=True), default=datetime.now(IST))
-    updated_at = db.Column(DateTime(timezone=True), onupdate=datetime.now(IST))
+    created_at = db.Column(DateTime(), default=func.now())
+    updated_at = db.Column(DateTime(), onupdate=func.now())
 
     # Relationship: One user has multiple patients
     patients = db.relationship("Patient", backref="user", cascade="all, delete-orphan")
@@ -32,8 +29,8 @@ class Patient(db.Model):
     name = db.Column(db.String(100), nullable=False)
     age = db.Column(db.Integer, nullable=False)
     phone = db.Column(db.String(100), nullable=True)
-    created_at = db.Column(DateTime(timezone=True), default=datetime.now(IST))
-    updated_at = db.Column(DateTime(timezone=True), onupdate=datetime.now(IST))
+    created_at = db.Column(DateTime(), default=func.now())
+    updated_at = db.Column(DateTime(), onupdate=func.now())
 
     # Relationship: A patient has multiple courses
     courses = db.relationship("Course", backref="patient", cascade="all, delete-orphan")
@@ -43,8 +40,8 @@ class Course(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=generate_uuid)
     name = db.Column(db.String(100), nullable=False)
     patient_id = db.Column(db.String(36), db.ForeignKey('patient.id'), nullable=False)
-    created_at = db.Column(DateTime(timezone=True), default=datetime.now(IST))
-    updated_at = db.Column(DateTime(timezone=True), onupdate=datetime.now(IST))
+    created_at = db.Column(DateTime(), default=func.now())
+    updated_at = db.Column(DateTime(), onupdate=func.now())
 
     # Relationship with medicines
     medicines = db.relationship("Medicine", backref="course", cascade="all, delete-orphan")
@@ -58,7 +55,7 @@ class Course(db.Model):
     @property
     def is_expired(self):
         """Check if the course has expired based on the latest medicine expiry date."""
-        return self.course_expiry.astimezone(IST) and self.course_expiry.astimezone(IST) < datetime.now(IST)
+        return self.course_expiry and self.course_expiry < datetime.utcnow()
 
 # Medicine model
 class Medicine(db.Model):
@@ -67,9 +64,9 @@ class Medicine(db.Model):
     name = db.Column(db.String(100), nullable=False)
     duration = db.Column(db.Integer, nullable=False)  # Duration in days
     times = db.Column(db.String(500), nullable=False)  # Store multiple times as JSON string
-    created_at = db.Column(DateTime(timezone=True), default=datetime.now(IST))
-    updated_at = db.Column(DateTime(timezone=True), onupdate=datetime.now(IST))
-    expiry_at = db.Column(DateTime(timezone=True))  # Calculated based on duration
+    created_at = db.Column(DateTime(), default=func.now())
+    updated_at = db.Column(DateTime(), onupdate=func.now())
+    expiry_at = db.Column(DateTime(), nullable=False)  # Calculated based on duration
 
     logs = db.relationship("MedicineLog", backref="medicine", cascade="all, delete-orphan")
 
@@ -84,17 +81,20 @@ class Medicine(db.Model):
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.created_at = self.created_at or datetime.now(IST)
-        self.expiry_at = self.created_at + timedelta(days=self.duration)
-        
+        # Ensure duration is set before using it
+        if self.duration is not None:
+            self.expiry_at = datetime.utcnow() + timedelta(days=self.duration)
+        else:
+            self.expiry_at = None  # Handle case where duration is missing
+
     def is_expired(self):
         """Check if the medicine has expired"""
-        return datetime.now(IST) > self.expiry_at.astimezone(IST) if self.expiry_at.astimezone(IST) else False
+        return datetime.utcnow() > self.expiry_at if self.expiry_at else False
     
 # Medicine log model
 class MedicineLog(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=generate_uuid)
     medicine_id = db.Column(db.String(36), db.ForeignKey('medicine.id'), nullable=False)
     is_taken = db.Column(db.Boolean, default=False)  # True if medicine was taken
-    created_at = db.Column(DateTime(timezone=True), default=datetime.now(IST))
-    updated_at = db.Column(DateTime(timezone=True), onupdate=datetime.now(IST))
+    created_at = db.Column(DateTime(), default=func.now())
+    updated_at = db.Column(DateTime(), onupdate=func.now())

@@ -7,6 +7,7 @@ import os
 from twilio.twiml.voice_response import VoiceResponse
 from twilio.rest import Client
 from app.config import db
+import pytz
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -19,16 +20,20 @@ twilio_bp = Blueprint('twilio', __name__)
 account_sid = os.getenv("TWILIO_ACCOUNT_SID")
 auth_token = os.getenv("TWILIO_AUTH_TOKEN")
 client = Client(account_sid, auth_token)
+IST = pytz.timezone('Asia/Kolkata')
+
 
 def check_medicine_times():
     """Check if any medicine time matches the current time and initiate a call."""
-    now = datetime.now()
-    current_time = now.strftime("%H:%M")
+    now_utc = datetime.utcnow()
+    now_ist = now_utc.replace(tzinfo=pytz.utc).astimezone(IST)
+    current_time = now_ist.strftime("%H:%M")
+    # Debug checking
+    print(f"Checking for medicines at {now_ist.date()} {current_time}")
 
     with scheduler.app.app_context():
         medicines = Medicine.query.all()
         for medicine in medicines:
-            print(f"eXP: {medicine.is_expired()}")
             if medicine.is_expired():  # Skip expired medicines
                 continue
             
@@ -36,8 +41,8 @@ def check_medicine_times():
             times_list = json.loads(medicine.times) if medicine.times else []
             
             if current_time in times_list:
-                
-                print(f"Calling patient for medicine reminder at {now.date()} {current_time}")
+                # Debug twilio call
+                print(f"Calling patient for medicine reminder at {now_ist.date()} {current_time}")
                 
                 patient = Patient.query.get(medicine.course.patient_id)
                 if not patient:
@@ -110,6 +115,6 @@ scheduler = BackgroundScheduler()
 def start_scheduler(app: Flask):
     """Start the background scheduler with the Flask app context."""
     scheduler.app = app
-    scheduler.add_job(check_medicine_times, 'cron', second=0, id='medicine_checker', replace_existing=True)
+    scheduler.add_job(check_medicine_times, 'interval', seconds=5, id='medicine_checker', replace_existing=True)
     scheduler.start()
     print("[DEBUG] Scheduler started successfully.")

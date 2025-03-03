@@ -1,4 +1,5 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
+from app.models import Medicine, MedicineLog
 from app.config import db
 from app.models import User
 from app.routes.auth_routes import token_required
@@ -74,6 +75,35 @@ def get_db(current_user):
             user_data['patients'].append(patient_data)
 
         return jsonify(user_data), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# Add medcine logs
+@user_bp.route('/add-medicine-log', methods=['POST'])
+@token_required
+def add_medicine_log(current_user):
+    try:
+        data = request.get_json()
+        medicine_id = data.get('medicine_id')
+        is_taken = data.get('is_taken')
+
+        if not medicine_id or is_taken is None:
+            return jsonify({'error': 'Invalid data'}), 400
+
+        medicine = Medicine.query.get(medicine_id)
+        if not medicine:
+            return jsonify({'error': 'Medicine not found'}), 404
+
+        new_medicine_log = MedicineLog(
+            medicine_id=medicine_id,
+            is_taken=is_taken
+        )
+        db.session.add(new_medicine_log)
+        db.session.commit()
+
+        return jsonify({'message': 'Medicine log added successfully'}), 201
 
     except Exception as e:
         db.session.rollback()
