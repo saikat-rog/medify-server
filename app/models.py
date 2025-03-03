@@ -56,9 +56,9 @@ class Course(db.Model):
         return latest_medicine.expiry_at if latest_medicine else None
     
     @property
-    def isExpired(self):
+    def is_expired(self):
         """Check if the course has expired based on the latest medicine expiry date."""
-        return self.course_expiry and self.course_expiry < datetime.now(timezone.IST)
+        return self.course_expiry.astimezone(IST) and self.course_expiry.astimezone(IST) < datetime.now(IST)
 
 # Medicine model
 class Medicine(db.Model):
