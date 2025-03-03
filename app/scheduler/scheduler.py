@@ -26,10 +26,9 @@ IST = pytz.timezone('Asia/Kolkata')
 def check_medicine_times():
     """Check if any medicine time matches the current time and initiate a call."""
     now_utc = datetime.utcnow()
+    # Convert utc time to ist
     now_ist = now_utc.replace(tzinfo=pytz.utc).astimezone(IST)
     current_time = now_ist.strftime("%H:%M")
-    # Debug checking
-    print(f"Checking for medicines at {now_ist.date()} {current_time}")
 
     with scheduler.app.app_context():
         medicines = Medicine.query.all()
@@ -73,7 +72,7 @@ def twiml():
     response = VoiceResponse()
     gather = response.gather(num_digits=1, action=f"{os.getenv('SERVER_URI')}/twilio/handle_ivr_response?patient_id={patient.id}&medicine_id={medicine.id}", method="POST")
     
-    gather.say(f"Hello, this is your medicine reminder. Please take your {medicine.name}. Press 1 to confirm.")
+    gather.say(f"Hello, this is your medicine reminder call. Please take your {medicine.name}. Press 1 to confirm your intake.")
 
     response.say("We did not receive any input. Goodbye.")
     return Response(str(response), mimetype="text/xml")
@@ -107,7 +106,7 @@ def handle_response():
         
         db.session.add(new_medicine_log)
         db.session.commit()
-        response.say("Invalid input. Goodbye.")
+        response.say("Sorry! We have not received any input. Goodbye!")
 
     return Response(str(response), mimetype="text/xml")
 
