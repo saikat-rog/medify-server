@@ -96,5 +96,5 @@ class MedicineLog(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=generate_uuid)
     medicine_id = db.Column(db.String(36), db.ForeignKey('medicine.id'), nullable=False)
     is_taken = db.Column(db.Boolean, default=False)  # True if medicine was taken
-    created_at = db.Column(DateTime(), default=func.now())
+    created_at = db.Column(DateTime(), default=func.now()) 
     updated_at = db.Column(DateTime(), onupdate=func.now())
