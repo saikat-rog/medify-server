@@ -79,3 +79,30 @@ def get_user(current_user):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+    
+#Get all patients for an user
+@user_bp.route('/get-patients', methods=['GET'])
+@token_required
+def get_patients(current_user):
+    try:
+        user = User.query.get(current_user.id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        patients = []
+        for patient in user.patients:
+            patient_data = {
+                'id': patient.id,
+                'name': patient.name,
+                'age': patient.age,
+                'phone': patient.phone,
+                'created_at': patient.created_at,
+                'updated_at': patient.updated_at
+            }
+            patients.append(patient_data)
+
+        return jsonify(patients), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
