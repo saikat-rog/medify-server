@@ -90,7 +90,7 @@ def login():
             'exp': datetime.datetime.now(IST) + datetime.timedelta(hours=50)  # Token expires in 2 hours
         }, SECRET_KEY, algorithm="HS256")
 
-        return jsonify({'message': 'Logged in successfully', 'token': token, 'user_id': user.id}), 200
+        return jsonify({'message': 'Logged in successfully', 'token': token, 'id': user.id, 'name': user.name, 'email': user.email}), 200
 
     except SQLAlchemyError as e:
         db.session.rollback()
