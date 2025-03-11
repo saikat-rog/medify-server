@@ -97,7 +97,8 @@ def get_patients(current_user):
                 'age': patient.age,
                 'phone': patient.phone,
                 'created_at': patient.created_at,
-                'updated_at': patient.updated_at
+                'updated_at': patient.updated_at,
+                'course_count': len(patient.courses)
             }
             patients.append(patient_data)
 
