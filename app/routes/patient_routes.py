@@ -152,7 +152,10 @@ def get_courses(current_user, patient_id):
         for course in courses:
             response.append({
                 "id": course.id,
-                "name": course.name
+                "name": course.name,
+                "started_at": course.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                "ends_at": course.course_expiry.strftime("%Y-%m-%d %H:%M:%S") if course.course_expiry else None,
+                "status": "Expired" if course.is_expired else "Active",
             })
 
         return jsonify(response), 200
@@ -161,7 +164,7 @@ def get_courses(current_user, patient_id):
         return jsonify({"error": str(e)}), 500
     
     
-    
+
 # MEDICINE
 # Add medicine and times to a an existing course
 @patient_bp.route("/add-medicine/<string:course_id>", methods=["POST"])
