@@ -1,0 +1,33 @@
+<<<<<<< HEAD
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environment
+venv/
+env/
+ENV/
+# *.env
+*.venv
+*.egg-info/
+
+# Flask stuff
+instance/
+*.db
+*.sqlite3
+
+# IDE/editor configs
+.vscode/
+.idea/
+*.swp
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+=======
+.env
+>>>>>>> 8f874aa85c56e6a4bdddd47ac21b4bb726c15265
