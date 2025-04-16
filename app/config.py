@@ -26,6 +26,8 @@ def create_app():
     app.json.sort_keys = False
 
     db.init_app(app)
+    with app.app_context():
+        db.create_all()
     migrate.init_app(app, db)
 
     from app.routes import register_blueprints
