@@ -98,14 +98,5 @@ class MedicineLog(db.Model):
     is_taken = db.Column(db.Boolean, default=False)  # True if medicine was taken
     created_at = db.Column(DateTime(), default=func.now()) 
     updated_at = db.Column(DateTime(), onupdate=func.now())
-    
-    
-    
-# related to other project || Ignore this
-class Comments(db.Model):
-    id = db.Column(db.String(36), primary_key=True, default=generate_uuid)
-    name = db.Column(db.String(100), nullable=False)
-    message = db.Column(db.String(500), nullable=False)
-    created_at = db.Column(DateTime(), default=func.now())
-    updated_at = db.Column(DateTime(), onupdate=func.now())
+
     

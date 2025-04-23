@@ -11,6 +11,3 @@ def register_blueprints(app):
     app.register_blueprint(patient_bp, url_prefix='/patient')
     app.register_blueprint(user_bp, url_prefix='/user')
     app.register_blueprint(twilio_bp, url_prefix='/twilio')
-    
-    
-    app.register_blueprint(comments_bp, url_prefix='/comments')
